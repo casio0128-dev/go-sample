@@ -1,0 +1,8 @@
+[user]
+name="Your name"
+employeeNum=000
+apartment="Development"
+
+[server]
+sourcePath="."
+backupPath=".
