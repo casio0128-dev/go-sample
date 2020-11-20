@@ -16,22 +16,25 @@ func main() {
 		log.Fatal(err)
 	}
 
-	var srcPath = conf.SourcePath()
-	var dstPath = conf.BackupPath()
-
-	src, err := os.Open(srcPath)
+	var srcFile = fmt.Sprintf("%s%s", conf.SourcePath(), conf.FileName())
+	src, err := os.Open(srcFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer src.Close()
 
-	dst, err := os.Create(dstPath)
+	if !dirExists(conf.BackupPath()) {
+		if err := os.MkdirAll(conf.BackupPath(), 0755); err != nil {
+			log.Fatal(err)
+		}
+	}
+
+	var dstFile = fmt.Sprintf("%s%s", conf.BackupPath(), conf.FileName())
+	dst, err := os.Create(dstFile)
 	if err != nil {
 		log.Fatal(err)
 	}
 	defer dst.Close()
-
-	fmt.Println(conf.FileName())
 
 	if _, err = io.Copy(dst, src); err != nil {
 		log.Fatal(err)
@@ -49,4 +52,12 @@ func main() {
 	// if err := f.SaveAs("Book1.xlsx"); err != nil {
 	// 	fmt.Println(err)
 	// }
+}
+
+func dirExists(path string) bool {
+	fmt.Println(path)
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+	return true
 }

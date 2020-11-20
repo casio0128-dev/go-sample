@@ -1,8 +1,9 @@
 [user]
-name="Your name"
-employeeNum=000
+name="Youre name"
+employeeNum=001
 apartment="Development"
 
 [server]
-sourcePath="."
-backupPath=".
+sourcePath="/go/src/app/"
+backupPath="/go/src/app/bkup/"
+
