@@ -24,14 +24,6 @@ type server struct {
 	BackupPath string `toml: "backupPath"`
 }
 
-// func (c Config) User() user {
-// 	return c.User
-// }
-
-// func (c Config) Server() server {
-// 	return c.Server
-// }
-
 func (c Config) FileName() string {
 	var now = time.Now()
 	var year = now.Format("2006")
@@ -48,6 +40,10 @@ func (c Config) SourcePath() string {
 		log.Fatal(err)
 	}
 
+	if !strings.HasSuffix(path, "/") {
+		suffixAddSlash(&path)
+	}
+
 	return path
 }
 
@@ -55,6 +51,10 @@ func (c Config) BackupPath() string {
 	path, err := parsePath(c.Server.BackupPath)
 	if err != nil {
 		log.Fatal(err)
+	}
+
+	if !strings.HasSuffix(path, "/") {
+		suffixAddSlash(&path)
 	}
 
 	return path
@@ -117,4 +117,8 @@ func dayOfTheWeekENtoJP(en string) string {
 		return "土"
 	}
 	return en
+}
+
+func suffixAddSlash(s *string) {
+	*s = (*s)[:len(*s)] + "/"
 }
