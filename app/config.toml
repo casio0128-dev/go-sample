@@ -1,9 +1,19 @@
-[user]
-name="Youre name"
-employeeNum=001
-apartment="Development"
-
 [server]
-sourcePath="/go/src/app/"
-backupPath="/go/src/app/bkup/"
+source="/go/src/app/"
+backup="/go/src/app/bkup/{YYYY}/{MM}/{DD}/{WW}"
 
+[file]
+source="勤怠管理{YYYY}年({MM}月)({EMPNUM}_{EMPNAME}).xlsx"
+backup="勤怠管理{YYYY}年({MM}月)({EMPNUM}_{EMPNAME})_{EMPAPARTMET}.xlsx"
+
+[[templates]]
+pattern="EMPNUM"
+value="598"
+
+[[templates]]
+pattern="EMPNAME"
+value="YOUR NAME"
+
+[[templates]]
+pattern="EMPAPARTMET"
+value="DEVELOPMENT"
