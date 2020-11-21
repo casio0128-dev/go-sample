@@ -11,6 +11,8 @@ import (
 type Config struct {
 	User   user
 	Server server
+	File file
+	Templates templates
 }
 
 type user struct {
@@ -23,6 +25,17 @@ type server struct {
 	SourcePath string `toml: "sourcePath"`
 	BackupPath string `toml: "backupPath"`
 }
+
+type file struct {
+	Name string		`toml: name`
+}
+
+type template struct {
+	Pattern string 	`toml: "pattern"`
+	Value string 	`toml: valie`
+}
+
+type templates []template
 
 func (c Config) FileName() string {
 	var now = time.Now()
@@ -69,34 +82,33 @@ func parsePath(path string) (string, error) {
 	var result = path
 	for _, match := range reg.FindAllString(result, -1) {
 		if reg.MatchString(result) {
-			result = parseDate(result, match)
+			parseDate(&result, match)
 		}
 	}
 
 	return result, nil
 }
 
-func parseDate(src, format string) (result string) {
+func parseDate(src *string, format string) {
 	var now = time.Now()
 	switch format {
 	case "{YYYY}":
-		result = strings.ReplaceAll(src, "{YYYY}", now.Format("2006"))
+		*src = strings.ReplaceAll(*src, format, now.Format("2006"))
 	case "{MM}":
-		result = strings.ReplaceAll(src, "{MM}", now.Format("01"))
+		*src = strings.ReplaceAll(*src, format, now.Format("01"))
 	case "{M}":
-		result = strings.ReplaceAll(src, "{M}", now.Format("1"))
+		*src = strings.ReplaceAll(*src, format, now.Format("1"))
 	case "{DD}":
-		result = strings.ReplaceAll(src, "{DD}", now.Format("02"))
+		*src = strings.ReplaceAll(*src, format, now.Format("02"))
 	case "{D}":
-		result = strings.ReplaceAll(src, "{D}", now.Format("2"))
+		*src = strings.ReplaceAll(*src, format, now.Format("2"))
 	case "{W}":
-		result = strings.ReplaceAll(src, "{W}", dayOfTheWeekENtoJP(now.Format("Mon")))
+		*src = strings.ReplaceAll(*src, format, dayOfTheWeekENtoJP(now.Format("Mon")))
 	case "{WW}":
-		result = strings.ReplaceAll(src, "{WW}", now.Format("Mon"))
+		*src = strings.ReplaceAll(*src, format, now.Format("Mon"))
 	case "{WWWW}":
-		result = strings.ReplaceAll(src, "{WWWW}", now.Format("Monday"))
+		*src = strings.ReplaceAll(*src, format, now.Format("Monday"))
 	}
-	return
 }
 
 func dayOfTheWeekENtoJP(en string) string {
@@ -121,4 +133,22 @@ func dayOfTheWeekENtoJP(en string) string {
 
 func suffixAddSlash(s *string) {
 	*s = (*s)[:len(*s)] + "/"
+}
+
+func (c Config) parseTemplates(path string) (string, error) {
+	var result = path
+	for _, template := range c.Templates {
+		reg, err := regexp.Compile(fmt.Sprintf(`({%s})`, template.Pattern))
+		if err != nil {
+			return "", err
+		}
+
+		for _, match := range reg.FindAllString(result, -1) {
+			if reg.MatchString(c.File.Name) {
+				result = strings.ReplaceAll(result, match, template.Value)
+			}
+		}
+	}
+fmt.Println(result)
+	return result, nil
 }

@@ -71,7 +71,6 @@ func backup(conf Config) error {
 }
 
 func dirExists(path string) bool {
-	fmt.Println(path)
 	if _, err := os.Stat(path); os.IsNotExist(err) {
 		return false
 	}
