@@ -22,55 +22,68 @@ type user struct {
 }
 
 type server struct {
-	SourcePath string `toml: "sourcePath"`
-	BackupPath string `toml: "backupPath"`
+	Source string `toml: "source"`
+	Backup string `toml: "backup"`
 }
 
 type file struct {
-	Name string		`toml: name`
+	Source string	`toml: "source"`
+	Backup string	`toml: "backup"`
 }
 
 type template struct {
 	Pattern string 	`toml: "pattern"`
-	Value string 	`toml: valie`
+	Value string 	`toml: "value"`
 }
 
 type templates []template
 
-func (c Config) FileName() string {
-	var now = time.Now()
-	var year = now.Format("2006")
-	var month = now.Format("01")
-	var empNum = c.User.EmployeeNum
-	var empName = c.User.Name
+func (c Config) SourceFile() string {
+	var result = c.File.Source
 
-	return fmt.Sprintf("勤怠管理%s年(%s月)(%d_%s).xlsx", year, month, empNum, empName)
+	if err := c.parse(&result); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
+}
+
+func (c Config) BackupFile() string {
+	var result = c.File.Backup
+
+	if err := c.parse(&result); err != nil {
+		log.Fatal(err)
+	}
+
+	return result
 }
 
 func (c Config) SourcePath() string {
-	path, err := parsePath(c.Server.SourcePath)
-	if err != nil {
+	var result = c.Server.Source
+
+	if err := c.parse(&result); err != nil {
 		log.Fatal(err)
 	}
 
-	if !strings.HasSuffix(path, "/") {
-		suffixAddSlash(&path)
+	if !strings.HasSuffix(result, "/") {
+		suffixAddSlash(&result)
 	}
 
-	return path
+	return result
 }
 
 func (c Config) BackupPath() string {
-	path, err := parsePath(c.Server.BackupPath)
-	if err != nil {
+	var result = c.Server.Backup
+
+	if err := c.parse(&result); err != nil {
 		log.Fatal(err)
 	}
 
-	if !strings.HasSuffix(path, "/") {
-		suffixAddSlash(&path)
+	if !strings.HasSuffix(result, "/") {
+		suffixAddSlash(&result)
 	}
 
-	return path
+	return result
 }
 
 func parsePath(path string) (string, error) {
@@ -135,6 +148,22 @@ func suffixAddSlash(s *string) {
 	*s = (*s)[:len(*s)] + "/"
 }
 
+func (c Config) parse(str *string) error {
+	var result = *str
+	result, err := parsePath(result)
+	if err != nil {
+		return err
+	}
+
+	result, err = c.parseTemplates(result)
+	if err != nil {
+		return err
+	}
+
+	*str = result
+	return nil
+}
+
 func (c Config) parseTemplates(path string) (string, error) {
 	var result = path
 	for _, template := range c.Templates {
@@ -144,11 +173,12 @@ func (c Config) parseTemplates(path string) (string, error) {
 		}
 
 		for _, match := range reg.FindAllString(result, -1) {
-			if reg.MatchString(c.File.Name) {
+			if reg.MatchString(result) {
 				result = strings.ReplaceAll(result, match, template.Value)
 			}
 		}
 	}
-fmt.Println(result)
+	fmt.Println(result)
+
 	return result, nil
 }

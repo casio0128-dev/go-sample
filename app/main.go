@@ -35,7 +35,7 @@ func main() {
 }
 
 func backup(conf Config) error {
-	var srcFile = fmt.Sprintf("%s%s", conf.SourcePath(), conf.FileName())
+	var srcFile = fmt.Sprintf("%s%s", conf.SourcePath(), conf.SourceFile())
 	src, err := os.Open(srcFile)
 	if err != nil {
 		return err
@@ -52,7 +52,7 @@ func backup(conf Config) error {
 		}
 	}
 
-	var dstFile = fmt.Sprintf("%s%s", conf.BackupPath(), conf.FileName())
+	var dstFile = fmt.Sprintf("%s%s", conf.BackupPath(), conf.BackupFile())
 	dst, err := os.Create(dstFile)
 	if err != nil {
 		return err
